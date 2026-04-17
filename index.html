@@ -1,0 +1,770 @@
+
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>¿Cuál protagonista de SATC eres?</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,700;1,400&family=Lato:wght@300;400;700&display=swap');
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    font-family: 'Lato', sans-serif;
+    background: #1a0a1e;
+    color: #f0e6f6;
+    min-height: 100vh;
+  }
+
+  .screen { display: none; padding: 2rem 1.5rem; max-width: 680px; margin: 0 auto; }
+  .screen.active { display: block; }
+
+  /* LANDING */
+  #screen-landing {
+    text-align: center;
+    padding-top: 3rem;
+    min-height: 100vh;
+    background: radial-gradient(ellipse at top, #3d1a5c 0%, #1a0a1e 60%);
+  }
+
+  .crown { font-size: 2.5rem; margin-bottom: 0.5rem; }
+
+  h1 {
+    font-family: 'Playfair Display', serif;
+    font-size: 2.2rem;
+    line-height: 1.2;
+    color: #f7c5e3;
+    margin-bottom: 0.5rem;
+  }
+
+  .subtitle {
+    font-size: 0.95rem;
+    color: #c9a0dc;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    margin-bottom: 2rem;
+  }
+
+  #qr-container {
+    background: #fff;
+    border-radius: 16px;
+    padding: 16px;
+    display: inline-block;
+    margin: 1.5rem auto;
+    box-shadow: 0 0 40px rgba(247,197,227,0.25);
+  }
+
+  .qr-label {
+    font-size: 0.75rem;
+    color: #9b59b6;
+    text-align: center;
+    margin-top: 0.75rem;
+    font-weight: 700;
+    letter-spacing: 1px;
+    text-transform: uppercase;
+  }
+
+  .btn-start {
+    background: linear-gradient(135deg, #c0392b, #9b59b6);
+    color: #fff;
+    border: none;
+    padding: 1rem 3rem;
+    border-radius: 50px;
+    font-family: 'Playfair Display', serif;
+    font-size: 1.1rem;
+    cursor: pointer;
+    margin-top: 1.5rem;
+    letter-spacing: 1px;
+    transition: transform 0.2s, box-shadow 0.2s;
+    box-shadow: 0 4px 20px rgba(192,57,43,0.4);
+  }
+
+  .btn-start:hover { transform: translateY(-2px); box-shadow: 0 8px 28px rgba(192,57,43,0.5); }
+
+  .characters-preview {
+    display: flex;
+    justify-content: center;
+    gap: 1.5rem;
+    margin: 2rem 0 1rem;
+    flex-wrap: wrap;
+  }
+
+  .char-avatar {
+    width: 60px;
+    height: 60px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.6rem;
+    border: 2px solid rgba(255,255,255,0.2);
+  }
+
+  /* QUIZ */
+  #screen-quiz {
+    min-height: 100vh;
+    background: #1a0a1e;
+    padding-top: 1.5rem;
+  }
+
+  .progress-bar {
+    width: 100%;
+    height: 4px;
+    background: rgba(255,255,255,0.1);
+    border-radius: 2px;
+    margin-bottom: 2rem;
+    overflow: hidden;
+  }
+
+  .progress-fill {
+    height: 100%;
+    background: linear-gradient(90deg, #c0392b, #9b59b6);
+    border-radius: 2px;
+    transition: width 0.4s ease;
+  }
+
+  .q-counter {
+    font-size: 0.75rem;
+    color: #c9a0dc;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    margin-bottom: 0.75rem;
+  }
+
+  .q-text {
+    font-family: 'Playfair Display', serif;
+    font-size: 1.35rem;
+    color: #f7c5e3;
+    line-height: 1.5;
+    margin-bottom: 2rem;
+    min-height: 80px;
+  }
+
+  .options-grid {
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+  }
+
+  .option-btn {
+    background: rgba(255,255,255,0.05);
+    border: 1px solid rgba(255,255,255,0.12);
+    color: #f0e6f6;
+    padding: 1rem 1.25rem;
+    border-radius: 12px;
+    text-align: left;
+    cursor: pointer;
+    font-family: 'Lato', sans-serif;
+    font-size: 0.95rem;
+    line-height: 1.4;
+    transition: all 0.2s;
+  }
+
+  .option-btn:hover {
+    background: rgba(155,89,182,0.25);
+    border-color: rgba(155,89,182,0.6);
+    transform: translateX(4px);
+  }
+
+  .option-btn.selected {
+    background: rgba(192,57,43,0.25);
+    border-color: #c0392b;
+    color: #f7c5e3;
+  }
+
+  .nav-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-top: 2rem;
+  }
+
+  .btn-nav {
+    background: transparent;
+    border: 1px solid rgba(255,255,255,0.2);
+    color: #c9a0dc;
+    padding: 0.6rem 1.5rem;
+    border-radius: 50px;
+    cursor: pointer;
+    font-size: 0.9rem;
+    transition: all 0.2s;
+  }
+
+  .btn-nav:hover { border-color: #9b59b6; color: #f0e6f6; }
+  .btn-nav:disabled { opacity: 0.3; cursor: default; }
+
+  .btn-next {
+    background: linear-gradient(135deg, #c0392b, #9b59b6);
+    border: none;
+    color: #fff;
+    padding: 0.7rem 2rem;
+    border-radius: 50px;
+    cursor: pointer;
+    font-size: 0.95rem;
+    font-weight: 700;
+    transition: all 0.2s;
+    opacity: 0.4;
+    pointer-events: none;
+  }
+
+  .btn-next.enabled {
+    opacity: 1;
+    pointer-events: all;
+  }
+
+  .btn-next.enabled:hover { transform: translateY(-1px); }
+
+  /* RESULTADO */
+  #screen-result {
+    min-height: 100vh;
+    background: radial-gradient(ellipse at bottom, #3d1a5c 0%, #1a0a1e 60%);
+    padding-top: 2rem;
+    text-align: center;
+  }
+
+  .result-emoji { font-size: 4rem; margin-bottom: 0.5rem; }
+
+  .result-name {
+    font-family: 'Playfair Display', serif;
+    font-size: 2.5rem;
+    font-weight: 700;
+    margin-bottom: 0.25rem;
+  }
+
+  .result-tagline {
+    font-size: 0.85rem;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    color: #c9a0dc;
+    margin-bottom: 1.5rem;
+  }
+
+  .result-desc {
+    font-size: 1rem;
+    line-height: 1.7;
+    color: #d4b8e8;
+    max-width: 500px;
+    margin: 0 auto 2rem;
+    text-align: left;
+  }
+
+  /* CUADRANTE */
+  .quadrant-title {
+    font-family: 'Playfair Display', serif;
+    font-size: 1.1rem;
+    color: #f7c5e3;
+    margin-bottom: 1rem;
+    text-align: center;
+  }
+
+  .quadrant-wrap {
+    max-width: 340px;
+    margin: 0 auto 2rem;
+  }
+
+  canvas#quadrant {
+    width: 100%;
+    border-radius: 12px;
+    border: 1px solid rgba(255,255,255,0.1);
+  }
+
+  .quadrant-legend {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 0.5rem;
+    max-width: 340px;
+    margin: 0 auto 2rem;
+    text-align: left;
+  }
+
+  .legend-item {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    font-size: 0.8rem;
+    color: #c9a0dc;
+  }
+
+  .legend-dot {
+    width: 10px;
+    height: 10px;
+    border-radius: 50%;
+    flex-shrink: 0;
+  }
+
+  .trait-pills {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+    justify-content: center;
+    margin-bottom: 2rem;
+  }
+
+  .pill {
+    padding: 0.4rem 1rem;
+    border-radius: 50px;
+    font-size: 0.8rem;
+    font-weight: 700;
+    letter-spacing: 0.5px;
+  }
+
+  .btn-retry {
+    background: transparent;
+    border: 1px solid rgba(247,197,227,0.4);
+    color: #f7c5e3;
+    padding: 0.8rem 2.5rem;
+    border-radius: 50px;
+    cursor: pointer;
+    font-size: 0.95rem;
+    font-family: 'Playfair Display', serif;
+    transition: all 0.2s;
+    margin-bottom: 3rem;
+  }
+
+  .btn-retry:hover {
+    background: rgba(247,197,227,0.1);
+    border-color: #f7c5e3;
+  }
+</style>
+</head>
+<body>
+
+<!-- LANDING -->
+<div id="screen-landing" class="screen active">
+  <div class="crown">👑</div>
+  <h1>¿Con cuál de las cuatro te identificás?</h1>
+  <p class="subtitle">Sex and the City · Quiz oficial</p>
+
+  <div class="characters-preview">
+    <div class="char-avatar" style="background: rgba(192,57,43,0.3)">🖊️</div>
+    <div class="char-avatar" style="background: rgba(155,89,182,0.3)">💜</div>
+    <div class="char-avatar" style="background: rgba(39,174,96,0.3)">💚</div>
+    <div class="char-avatar" style="background: rgba(41,128,185,0.3)">💙</div>
+  </div>
+
+  <p style="font-size:0.85rem; color:#c9a0dc; margin-bottom:0.5rem">Carrie · Samantha · Charlotte · Miranda</p>
+
+  <div id="qr-container"></div>
+  <p class="qr-label">Escaneá para jugar desde tu teléfono</p>
+
+  <br>
+  <button class="btn-start" onclick="startQuiz()">Empezar el quiz ✨</button>
+  <p style="font-size:0.75rem;color:#7d5a8a;margin-top:1rem">12 preguntas · ~4 minutos</p>
+</div>
+
+<!-- QUIZ -->
+<div id="screen-quiz" class="screen">
+  <div class="progress-bar"><div class="progress-fill" id="progress-fill"></div></div>
+  <div class="q-counter" id="q-counter">Pregunta 1 de 12</div>
+  <div class="q-text" id="q-text"></div>
+  <div class="options-grid" id="options-grid"></div>
+  <div class="nav-row">
+    <button class="btn-nav" id="btn-prev" onclick="prevQ()">← Anterior</button>
+    <button class="btn-next" id="btn-next" onclick="nextQ()">Siguiente →</button>
+  </div>
+</div>
+
+<!-- RESULTADO -->
+<div id="screen-result" class="screen">
+  <div class="result-emoji" id="r-emoji"></div>
+  <div class="result-name" id="r-name"></div>
+  <div class="result-tagline" id="r-tagline"></div>
+  <div class="result-desc" id="r-desc"></div>
+
+  <div class="trait-pills" id="r-pills"></div>
+
+  <div class="quadrant-title">Tu mapa de cercanía a las cuatro</div>
+  <div class="quadrant-wrap">
+    <canvas id="quadrant" width="340" height="340"></canvas>
+  </div>
+  <div class="quadrant-legend" id="quad-legend"></div>
+
+  <button class="btn-retry" onclick="restartQuiz()">🔄 Jugá de nuevo</button>
+</div>
+
+<script>
+const questions = [
+  {
+    text: "Un sábado a la noche libre. ¿Cuál es tu plan ideal?",
+    opts: [
+      { text: "Escribir sobre lo que siento mientras saboreo un Cosmo sola", chars: [3,0,0,0] },
+      { text: "Salir a conquistar: la noche es mía", chars: [0,3,0,0] },
+      { text: "Cena elegante con mi pareja o una amiga de confianza", chars: [0,0,3,0] },
+      { text: "Maratón de películas con comida a domicilio. La cama no miente.", chars: [0,0,0,3] }
+    ]
+  },
+  {
+    text: "Tu ex te escribe a las 2am: 'Pienso en vos'. ¿Qué hacés?",
+    opts: [
+      { text: "Lo dejo en visto... y le escribo tres horas después algo profundo", chars: [3,0,0,0] },
+      { text: "Respondo al instante. Noche larga o noche corta, yo decido", chars: [0,3,0,0] },
+      { text: "Lo ignoro. Esa etapa ya cerró y lo sé bien", chars: [0,0,3,0] },
+      { text: "Lo bloqueo y me duermo. No tengo tiempo para ese drama", chars: [0,0,0,3] }
+    ]
+  },
+  {
+    text: "¿Cómo definirías tu relación con el dinero?",
+    opts: [
+      { text: "Los zapatos son una inversión emocional. Fin.", chars: [3,0,0,0] },
+      { text: "Me lo gasto en experiencias que nadie me puede quitar", chars: [0,3,0,0] },
+      { text: "Ahorro, planeo y me permito lujos bien elegidos", chars: [0,0,3,0] },
+      { text: "Lo gano con esfuerzo y lo administro con lógica", chars: [0,0,0,3] }
+    ]
+  },
+  {
+    text: "Una amiga te cuenta que engañó a su pareja. ¿Cómo reaccionás?",
+    opts: [
+      { text: "Escucho todo, no juzgo... aunque luego escribo sobre el karma en mi columna", chars: [3,0,0,0] },
+      { text: "Le digo que la vida es corta y que haga lo que la hace feliz", chars: [0,3,0,0] },
+      { text: "Trato de entender, pero le digo que el amor merece honestidad", chars: [0,0,3,0] },
+      { text: "Le doy mi opinión directa. No me ando con vueltas.", chars: [0,0,0,3] }
+    ]
+  },
+  {
+    text: "¿Cuál es tu postura ante el sexo en una relación nueva?",
+    opts: [
+      { text: "Primero quiero saber si hay conexión real. El resto viene solo.", chars: [3,0,0,0] },
+      { text: "El sexo puede venir antes que la conversación. Es parte de conocerse.", chars: [0,3,0,0] },
+      { text: "Prefiero esperar. La intimidad emocional primero.", chars: [0,0,3,0] },
+      { text: "Soy práctica: si hay química, no hay reglas.", chars: [0,0,0,3] }
+    ]
+  },
+  {
+    text: "Tus amigas describirían tu rol en el grupo como...",
+    opts: [
+      { text: "La soñadora que une todo con sus historias", chars: [3,0,0,0] },
+      { text: "La que propone los planes más locos (y los cumple)", chars: [0,3,0,0] },
+      { text: "El corazón del grupo. La que cuida y organiza todo.", chars: [0,0,3,0] },
+      { text: "La voz de la razón, aunque a veces duela escucharla", chars: [0,0,0,3] }
+    ]
+  },
+  {
+    text: "¿Qué te dice más de una persona en una primera cita?",
+    opts: [
+      { text: "La forma en que habla de sus ex", chars: [3,0,0,0] },
+      { text: "La tensión física y cómo maneja la situación", chars: [0,3,0,0] },
+      { text: "Sus valores y qué busca en una pareja", chars: [0,0,3,0] },
+      { text: "Si llegó a tiempo y si es directo en lo que quiere", chars: [0,0,0,3] }
+    ]
+  },
+  {
+    text: "Cuando estás en pareja, ¿cuál es tu mayor miedo?",
+    opts: [
+      { text: "Perderme a mí misma por amor", chars: [3,0,0,0] },
+      { text: "Que me pidan que sea menos yo", chars: [0,3,0,0] },
+      { text: "Que no funcione y quedarme sola para siempre", chars: [0,0,3,0] },
+      { text: "Que el otro no esté a mi nivel o me frene", chars: [0,0,0,3] }
+    ]
+  },
+  {
+    text: "¿Qué opinás de las relaciones abiertas?",
+    opts: [
+      { text: "Me parece fascinante como tema para analizar, aunque no es para mí", chars: [3,0,0,0] },
+      { text: "El amor no debería tener límites ni dueños", chars: [0,3,0,0] },
+      { text: "El compromiso exclusivo es fundamental para mí", chars: [0,0,3,0] },
+      { text: "Podría funcionar si hay acuerdos claros. Soy pragmática.", chars: [0,0,0,3] }
+    ]
+  },
+  {
+    text: "Tu look para una noche importante es...",
+    opts: [
+      { text: "Algo irrepetible, que me haga sentir protagonista de mi propia historia", chars: [3,0,0,0] },
+      { text: "Sensual, audaz. Que hablen.", chars: [0,3,0,0] },
+      { text: "Elegante y femenino. Clásico nunca falla.", chars: [0,0,3,0] },
+      { text: "Cómodo pero bien puesto. La ropa no me define.", chars: [0,0,0,3] }
+    ]
+  },
+  {
+    text: "Cuando terminás una relación, ¿cómo procesás la ruptura?",
+    opts: [
+      { text: "Escribo, reflexiono, hablo con mis amigas hasta entenderlo todo", chars: [3,0,0,0] },
+      { text: "Salgo, conozco alguien nuevo. La mejor medicina sos vos misma.", chars: [0,3,0,0] },
+      { text: "Lloro, me permito el duelo y luego vuelvo a creer en el amor", chars: [0,0,3,0] },
+      { text: "Me enfoco en el trabajo y sigo adelante. La vida no para.", chars: [0,0,0,3] }
+    ]
+  },
+  {
+    text: "¿Qué es lo más importante para vos en una amistad?",
+    opts: [
+      { text: "La profundidad. Que me conozcan de verdad.", chars: [3,0,0,0] },
+      { text: "La lealtad y que no me juzguen sin importar qué", chars: [0,3,0,0] },
+      { text: "El apoyo incondicional y compartir los mismos valores", chars: [0,0,3,0] },
+      { text: "La honestidad brutal. Prefiero una verdad incómoda a una mentira linda.", chars: [0,0,0,3] }
+    ]
+  }
+];
+
+const characters = [
+  {
+    name: "Carrie Bradshaw",
+    emoji: "🖊️",
+    color: "#c0392b",
+    tagline: "La escritora romántica e irredenta",
+    desc: "Vivís el amor como una novela que estás escribiendo en tiempo real. Tus emociones son tu brújula y tus contradicciones, tu mayor encanto. Sos introspectiva, creativa y magnética. Podés idealizar demasiado, pero cuando amás, amás con todo. La pregunta que siempre ronda tu cabeza: '¿puedo tener todo sin perder quién soy?'",
+    pills: ["Romántica", "Creativa", "Reflexiva", "Indecisa", "Auténtica"],
+    pillColor: "rgba(192,57,43,0.3)",
+    pillText: "#f7c5e3"
+  },
+  {
+    name: "Samantha Jones",
+    emoji: "🔥",
+    color: "#9b59b6",
+    tagline: "La reina que no pide permiso",
+    desc: "Vas por la vida sin disculpas ni rodeos. El deseo es tuyo y lo ejercés con soberanía. Tu independencia es tu activo más poderoso y tu lealtad a las amigas, inquebrantable. Sos directa, sexual, sin filtros — y eso aterroriza y fascina a partes iguales. El amor no te ata: te eleva o no entra.",
+    pills: ["Independiente", "Audaz", "Leal", "Sensual", "Sin filtros"],
+    pillColor: "rgba(155,89,182,0.3)",
+    pillText: "#d7b4f7"
+  },
+  {
+    name: "Charlotte York",
+    emoji: "💍",
+    color: "#27ae60",
+    tagline: "La romántica que cree en los cuentos",
+    desc: "Para vos el amor es un proyecto de vida serio. Creés en el compromiso, en la familia, en la belleza de los rituales. Podés ser exigente con los estándares, pero eso es porque sabés lo que merecés. Sos el corazón del grupo: la que cuida, organiza y nunca deja de creer, aunque el mundo te lo complique.",
+    pills: ["Romántica", "Optimista", "Leal", "Exigente", "Soñadora"],
+    pillColor: "rgba(39,174,96,0.25)",
+    pillText: "#a8e6c0"
+  },
+  {
+    name: "Miranda Hobbes",
+    emoji: "⚖️",
+    color: "#2980b9",
+    tagline: "La pragmática que lo tiene claro",
+    desc: "Sos la que ve las cosas como son, no como quisieras que sean. Tu inteligencia y ambición son tu sello. No necesitás validación: te ganás tu lugar. A veces tu coraza asusta, pero bajo esa dureza hay una persona profundamente leal y apasionada. El amor llegó cuando menos lo esperabas, y eso te cambió.",
+    pills: ["Pragmática", "Directa", "Ambiciosa", "Leal", "Racional"],
+    pillColor: "rgba(41,128,185,0.3)",
+    pillText: "#a8d4f5"
+  }
+];
+
+let answers = new Array(12).fill(null);
+let currentQ = 0;
+
+function startQuiz() {
+  document.getElementById('screen-landing').classList.remove('active');
+  document.getElementById('screen-quiz').classList.add('active');
+  renderQ();
+}
+
+function renderQ() {
+  const q = questions[currentQ];
+  document.getElementById('q-counter').textContent = `Pregunta ${currentQ + 1} de 12`;
+  document.getElementById('q-text').textContent = q.text;
+  document.getElementById('progress-fill').style.width = `${((currentQ) / 12) * 100}%`;
+
+  const grid = document.getElementById('options-grid');
+  grid.innerHTML = '';
+  q.opts.forEach((opt, i) => {
+    const btn = document.createElement('button');
+    btn.className = 'option-btn' + (answers[currentQ] === i ? ' selected' : '');
+    btn.textContent = opt.text;
+    btn.onclick = () => selectOpt(i);
+    grid.appendChild(btn);
+  });
+
+  document.getElementById('btn-prev').disabled = currentQ === 0;
+  const btnNext = document.getElementById('btn-next');
+  btnNext.textContent = currentQ === 11 ? 'Ver mi resultado ✨' : 'Siguiente →';
+  btnNext.className = 'btn-next' + (answers[currentQ] !== null ? ' enabled' : '');
+}
+
+function selectOpt(i) {
+  answers[currentQ] = i;
+  document.querySelectorAll('.option-btn').forEach((b, idx) => {
+    b.className = 'option-btn' + (idx === i ? ' selected' : '');
+  });
+  document.getElementById('btn-next').className = 'btn-next enabled';
+}
+
+function nextQ() {
+  if (answers[currentQ] === null) return;
+  if (currentQ === 11) { showResult(); return; }
+  currentQ++;
+  renderQ();
+}
+
+function prevQ() {
+  if (currentQ === 0) return;
+  currentQ--;
+  renderQ();
+}
+
+function calcScores() {
+  const scores = [0, 0, 0, 0];
+  answers.forEach((ans, qi) => {
+    if (ans === null) return;
+    const contrib = questions[qi].opts[ans].chars;
+    contrib.forEach((v, ci) => scores[ci] += v);
+  });
+  return scores;
+}
+
+function showResult() {
+  document.getElementById('progress-fill').style.width = '100%';
+  document.getElementById('screen-quiz').classList.remove('active');
+  document.getElementById('screen-result').classList.add('active');
+
+  const scores = calcScores();
+  const maxIdx = scores.indexOf(Math.max(...scores));
+  const char = characters[maxIdx];
+
+  document.getElementById('r-emoji').textContent = char.emoji;
+  document.getElementById('r-name').textContent = char.name;
+  document.getElementById('r-name').style.color = char.color;
+  document.getElementById('r-tagline').textContent = char.tagline;
+  document.getElementById('r-desc').textContent = char.desc;
+
+  const pillsEl = document.getElementById('r-pills');
+  pillsEl.innerHTML = '';
+  char.pills.forEach(p => {
+    const pill = document.createElement('span');
+    pill.className = 'pill';
+    pill.textContent = p;
+    pill.style.background = char.pillColor;
+    pill.style.color = char.pillText;
+    pillsEl.appendChild(pill);
+  });
+
+  drawQuadrant(scores);
+}
+
+function drawQuadrant(scores) {
+  const canvas = document.getElementById('quadrant');
+  const ctx = canvas.getContext('2d');
+  const W = 340, H = 340;
+  canvas.width = W; canvas.height = H;
+
+  ctx.fillStyle = '#1a0a1e';
+  ctx.fillRect(0, 0, W, H);
+
+  const cx = W / 2, cy = H / 2;
+
+  // Grid lines
+  ctx.strokeStyle = 'rgba(255,255,255,0.08)';
+  ctx.lineWidth = 1;
+  for (let i = 1; i < 4; i++) {
+    ctx.beginPath(); ctx.moveTo(i * W/4, 0); ctx.lineTo(i * W/4, H); ctx.stroke();
+    ctx.beginPath(); ctx.moveTo(0, i * H/4); ctx.lineTo(W, i * H/4); ctx.stroke();
+  }
+
+  // Axes
+  ctx.strokeStyle = 'rgba(255,255,255,0.25)';
+  ctx.lineWidth = 1.5;
+  ctx.beginPath(); ctx.moveTo(cx, 10); ctx.lineTo(cx, H-10); ctx.stroke();
+  ctx.beginPath(); ctx.moveTo(10, cy); ctx.lineTo(W-10, cy); ctx.stroke();
+
+  // Quadrant labels
+  ctx.font = '11px Lato, sans-serif';
+  ctx.fillStyle = 'rgba(200,160,220,0.5)';
+  ctx.fillText('Romántica', 14, 22);
+  ctx.fillText('Ambiciosa', W - 90, 22);
+  ctx.fillText('Soñadora', 14, H - 10);
+  ctx.fillText('Libre', W - 42, H - 10);
+
+  // Max score for normalization
+  const total = Math.max(...scores, 1);
+
+  // Character positions in quadrant:
+  // Carrie: top-left (romantic, introspective)
+  // Miranda: top-right (ambitious)
+  // Charlotte: bottom-left (dreamy, romantic)
+  // Samantha: bottom-right (free, sensual)
+  const positions = [
+    { x: cx - 80, y: cy - 80 }, // Carrie
+    { x: cx + 80, y: cy - 80 }, // Samantha
+    { x: cx - 80, y: cy + 80 }, // Charlotte
+    { x: cx + 80, y: cy + 80 }, // Miranda
+  ];
+
+  const colors = ['#c0392b', '#9b59b6', '#27ae60', '#2980b9'];
+  const labels = ['Carrie', 'Samantha', 'Charlotte', 'Miranda'];
+
+  // Draw influence circles (faint)
+  scores.forEach((s, i) => {
+    const pos = positions[i];
+    const r = 18 + (s / total) * 40;
+    ctx.beginPath();
+    ctx.arc(pos.x, pos.y, r, 0, Math.PI * 2);
+    ctx.fillStyle = colors[i] + '33';
+    ctx.fill();
+  });
+
+  // Connection lines to center
+  scores.forEach((s, i) => {
+    const pos = positions[i];
+    const ratio = s / total;
+    ctx.beginPath();
+    ctx.moveTo(cx, cy);
+    ctx.lineTo(cx + (pos.x - cx) * ratio, cy + (pos.y - cy) * ratio);
+    ctx.strokeStyle = colors[i] + '88';
+    ctx.lineWidth = 2;
+    ctx.stroke();
+  });
+
+  // Dots
+  scores.forEach((s, i) => {
+    const pos = positions[i];
+    const ratio = s / total;
+    const dotX = cx + (pos.x - cx) * ratio;
+    const dotY = cy + (pos.y - cy) * ratio;
+
+    ctx.beginPath();
+    ctx.arc(dotX, dotY, 8, 0, Math.PI * 2);
+    ctx.fillStyle = colors[i];
+    ctx.fill();
+  });
+
+  // Center dot
+  ctx.beginPath();
+  ctx.arc(cx, cy, 5, 0, Math.PI * 2);
+  ctx.fillStyle = 'rgba(255,255,255,0.3)';
+  ctx.fill();
+
+  // Character name labels
+  scores.forEach((s, i) => {
+    const pos = positions[i];
+    ctx.font = '500 11px Lato, sans-serif';
+    ctx.fillStyle = colors[i];
+    const lx = pos.x < cx ? pos.x - 40 : pos.x + 12;
+    const ly = pos.y < cy ? pos.y - 14 : pos.y + 20;
+    ctx.fillText(labels[i], lx, ly);
+    ctx.font = '10px Lato, sans-serif';
+    ctx.fillStyle = 'rgba(200,160,220,0.7)';
+    ctx.fillText(`${Math.round((s/total)*100)}%`, lx, ly + 13);
+  });
+
+  // Legend
+  const legend = document.getElementById('quad-legend');
+  legend.innerHTML = '';
+  characters.forEach((c, i) => {
+    const item = document.createElement('div');
+    item.className = 'legend-item';
+    item.innerHTML = `<div class="legend-dot" style="background:${colors[i]}"></div>${c.name}: <strong>${Math.round((scores[i]/Math.max(...scores,1))*100)}%</strong>`;
+    legend.appendChild(item);
+  });
+}
+
+function restartQuiz() {
+  answers = new Array(12).fill(null);
+  currentQ = 0;
+  document.getElementById('screen-result').classList.remove('active');
+  document.getElementById('screen-landing').classList.add('active');
+}
+
+// Generate QR
+window.onload = function() {
+  const url = window.location.href;
+  new QRCode(document.getElementById('qr-container'), {
+    text: url,
+    width: 160,
+    height: 160,
+    colorDark: "#1a0a1e",
+    colorLight: "#ffffff",
+    correctLevel: QRCode.CorrectLevel.M
+  });
+};
+</script>
+</body>
+</html>
